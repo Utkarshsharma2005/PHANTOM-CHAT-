@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: phantom-chat-api
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm ci --legacy-peer-deps
+    startCommand: npm run start:server
+    healthCheckPath: /healthz
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: TRUST_CF_CONNECTING_IP
+        value: true
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: phantom-chat-redis
+          property: connectionString
+  - type: keyvalue
+    name: phantom-chat-redis
+    region: oregon
+    plan: starter
+    maxmemoryPolicy: noeviction

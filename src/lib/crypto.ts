@@ -32,13 +32,16 @@ export async function keyToBase64(key: CryptoKey): Promise<string> {
     return bufferToBase64(exported);
 }
 
-export async function base64ToKey(base64: string): Promise<CryptoKey> {
+export async function base64ToKey(base64: string, extractable = true): Promise<CryptoKey> {
     const binary = base64ToBuffer(base64);
+    if (binary.byteLength !== 32) {
+        throw new Error("AES-GCM room keys must be 256 bits");
+    }
     return window.crypto.subtle.importKey(
         "raw",
-        binary as unknown as BufferSource,
+        toArrayBuffer(binary),
         { name: "AES-GCM" },
-        true,
+        extractable,
         ["encrypt", "decrypt"]
     );
 }
@@ -49,7 +52,8 @@ export function generateRoomId(): string {
 
 export async function encryptMessage(
     message: string,
-    key: CryptoKey
+    key: CryptoKey,
+    additionalData?: string
 ): Promise<{ ciphertext: string; iv: string }> {
     const encoder = new TextEncoder();
     const data = encoder.encode(message);
@@ -58,10 +62,11 @@ export async function encryptMessage(
     const encrypted = await window.crypto.subtle.encrypt(
         {
             name: "AES-GCM",
-            iv: iv as unknown as BufferSource,
+            iv: toArrayBuffer(iv),
+            ...(additionalData ? { additionalData: toArrayBuffer(new TextEncoder().encode(additionalData)) } : {}),
         },
         key,
-        data as unknown as BufferSource
+        toArrayBuffer(data)
     );
 
     return {
@@ -73,18 +78,23 @@ export async function encryptMessage(
 export async function decryptMessage(
     ciphertext: string,
     iv: string,
-    key: CryptoKey
+    key: CryptoKey,
+    additionalData?: string
 ): Promise<string> {
     const decodedCiphertext = base64ToBuffer(ciphertext);
     const decodedIv = base64ToBuffer(iv);
+    if (decodedIv.byteLength !== 12 || decodedCiphertext.byteLength < 16) {
+        throw new Error("Invalid AES-GCM message envelope");
+    }
 
     const decrypted = await window.crypto.subtle.decrypt(
         {
             name: "AES-GCM",
-            iv: decodedIv as unknown as BufferSource,
+            iv: toArrayBuffer(decodedIv),
+            ...(additionalData ? { additionalData: toArrayBuffer(new TextEncoder().encode(additionalData)) } : {}),
         },
         key,
-        decodedCiphertext as unknown as BufferSource
+        toArrayBuffer(decodedCiphertext)
     );
 
     const decoder = new TextDecoder();
@@ -101,10 +111,19 @@ function bufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
 }
 
 function base64ToBuffer(base64: string): Uint8Array {
+    if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(base64)) {
+        throw new Error("Invalid base64 data");
+    }
     const binary = window.atob(base64);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
     }
     return bytes;
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+    const copy = new Uint8Array(bytes.byteLength);
+    copy.set(bytes);
+    return copy.buffer;
 }

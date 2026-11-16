@@ -1,73 +1,24 @@
-# React + TypeScript + Vite
+# Phantom Chat
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Phantom Chat is a private, browser-encrypted room chat with a Next.js/React frontend and a Node.js WebSocket relay. The frontend is intended for Vercel; the backend runs as a persistent Render web service, with MongoDB for encrypted message history and Redis for cross-instance fan-out, short-lived history cache, and distributed rate limits.
 
-Currently, two official plugins are available:
+The current interface supports creating or joining one invite-only room, sending encrypted text messages, restoring history, searching messages already loaded in the room, copying the invite, and reconnecting with an encrypted local outbox. The chat view shows only the current room and current participant data. The landing-page chat is a labeled illustrative preview; voice/video calls, reactions, file sharing, verified identities, and multi-room navigation are not implemented.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Development
 
-## React Compiler
+See [Deployment](docs/DEPLOYMENT.md) for local setup, required environment variables, and deployment steps. Next.js serves the browser app on port 5173 while the Express API and WebSocket relay use port 4000.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm ci --legacy-peer-deps
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Run checks with `npm run lint`, `npm run build`, and `npm test`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Architecture and security
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- [Architecture overview](docs/ARCHITECTURE.md)
+- [Security boundary and known limitations](docs/SECURITY.md)
+- [Cryptography notes](docs/CRYPTOGRAPHY.md)
+
+The current encryption design uses one AES-GCM room key shared through a bearer invite link. It encrypts message contents in the browser, but does not yet provide authenticated identities, forward secrecy, or Signal Protocol compatibility. See the security notes before using it with sensitive conversations.
