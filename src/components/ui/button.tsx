@@ -5,18 +5,18 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_hsl(175_80%_50%/0.4)] hover:shadow-[0_0_40px_hsl(175_80%_50%/0.6)]",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-none",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border border-primary/50 bg-transparent text-primary hover:bg-primary/10 hover:border-primary",
+        outline: "border border-border bg-transparent text-foreground hover:bg-secondary",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent/10 hover:text-accent",
         link: "text-primary underline-offset-4 hover:underline",
-        glow: "bg-primary text-primary-foreground shadow-[0_0_40px_hsl(175_80%_50%/0.6)] hover:scale-105 active:scale-95 font-mono tracking-wider",
-        cyber: "border border-primary bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground font-mono tracking-wider uppercase",
+        glow: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-none",
+        cyber: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
       },
       size: {
         default: "h-10 px-4 py-2",
